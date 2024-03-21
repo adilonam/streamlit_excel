@@ -3,10 +3,9 @@ import pandas as pd
 import random
 
 def main():
-    # Title of the application
     st.title('Name and Winning Number')
-    
-    # Option to choose a winning number or generate it randomly
+
+    # Get the winning number, whether chosen or randomly generated
     choose_winning_number = st.checkbox('I want to choose the winning number')
     if choose_winning_number:
         winning_number = st.number_input('Enter the winning number (between 0 and 7500):', min_value=0, max_value=7500, value=0)
@@ -14,26 +13,40 @@ def main():
         winning_number = random.randint(0, 7500)
         st.write(f"The randomly selected winning number is: {winning_number}")
 
-    # Input text area for user to enter names, height can be adjusted as needed
-    names_string = st.text_area("Enter names, one per line:", height=150)
+    # Let the user enter names
+    names_string = st.text_area("Enter names, one per line. Add an asterisk (*) after the winning name:", height=150)
+    
+    # When the button is clicked to generate the CSV...
     generate_button = st.button('Generate CSV')
-
     if generate_button and names_string:
-        # Split the string of names into a list using newlines
+        # Process the entered names
         names_list = [name.strip() for name in names_string.split('\n') if name.strip() != '']
+
+        # Generate random numbers and results; mark the name with an asterisk as the winner
+        random_numbers = []
+        results = []
+        index = -1
+        for name in names_list:
+            index += 1
+            if name.endswith('*'):
+                # If the name ends with an asterisk, it's the winner
+                names_list[index] = name.rstrip('*')  # Remove asterisk for display
+                random_numbers.append(winning_number)
+                results.append('Win')
+            else:
+                # Otherwise, generate a random number and it's a 'Lose'
+                random_number = random.randint(0, 7500)
+                random_numbers.append(random_number)
+                results.append('Lose' if random_number != winning_number else 'Win')  # This covers the very unlikely event the random number matches the winning one
         
-        # Generate a random number for each name and check if it's the winning number
-        random_numbers = [random.randint(0, 7500) for _ in names_list]
-        results = ['Win' if number == winning_number else 'Lose' for number in random_numbers]
-        
-        # Create a DataFrame
+        # Prepare the data frame
         data = pd.DataFrame({
             'Name': names_list,
             'RandomNumber': random_numbers,
             'Result': results
         })
-        
-        # Convert DataFrame to CSV and allow user to download
+
+        # Download button for the CSV
         st.download_button(
             label="Download CSV",
             data=data.to_csv(index=False).encode('utf-8'),
