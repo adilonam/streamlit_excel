@@ -52,6 +52,8 @@ def main():
             'RandomNumber': random_numbers,
             'Result': results
         })
+        winner_row = data[data['Result'].str.contains('Win')].iloc[0]
+        st.write(f"The winner is: {winner_row['Name']} 🏆")
 
         # Download button for the CSV
         st.download_button(
